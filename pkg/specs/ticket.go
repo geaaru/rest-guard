@@ -20,3 +20,10 @@ func (t *RestTicket) Rip() {
 		t.Response.Body.Close()
 	}
 }
+
+func (t *RestTicket) AddFail(n *RestNode) {
+	ispresent := t.FailedNodes.HasNode(n)
+	if !ispresent {
+		t.FailedNodes = append(t.FailedNodes, n)
+	}
+}
