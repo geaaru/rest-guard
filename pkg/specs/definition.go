@@ -9,13 +9,14 @@ import (
 )
 
 type RestTicket struct {
-	Id       string
-	Request  *http.Request
-	Response *http.Response
-	Path     string
-	Retries  int
-	Service  *RestService
-	Node     *RestNode
+	Id          string
+	Request     *http.Request
+	Response    *http.Response
+	Path        string
+	Retries     int
+	Service     *RestService
+	Node        *RestNode
+	FailedNodes RestNodes
 }
 
 type RestNode struct {
@@ -24,10 +25,15 @@ type RestNode struct {
 	Ssl     bool   `json:"ssl,omitempty" yaml:"ssl,omitempty"`
 }
 
+type RestNodes []*RestNode
+
 type RestService struct {
-	Name    string      `json:"name" yaml:"name"`
-	Nodes   []*RestNode `json:"nodes" yaml:"nodes"`
-	Retries int         `json:"retries,omitempty" yaml:"retries,omitempty"`
+	Name            string      `json:"name" yaml:"name"`
+	Nodes           []*RestNode `json:"nodes" yaml:"nodes"`
+	Retries         int         `json:"retries,omitempty" yaml:"retries,omitempty"`
+	RetryIntervalMs int         `json:"retry_interval_ms,omitempty" yaml:"retry_interval_ms,omitempty"`
+
+	RespValidatorCb func(t *RestTicket) bool
 }
 
 type RestGuardConfig struct {

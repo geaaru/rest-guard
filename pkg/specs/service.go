@@ -8,11 +8,22 @@ import (
 	"github.com/google/uuid"
 )
 
+func defaultRespCheck(t *RestTicket) bool {
+	ans := false
+	if t.Response != nil &&
+		(t.Response.StatusCode == 200 || t.Response.StatusCode == 201) {
+		ans = true
+	}
+	return ans
+}
+
 func NewRestService(n string) *RestService {
 	return &RestService{
-		Name:    n,
-		Nodes:   []*RestNode{},
-		Retries: 0,
+		Name:            n,
+		Nodes:           []*RestNode{},
+		Retries:         0,
+		RespValidatorCb: defaultRespCheck,
+		RetryIntervalMs: 10,
 	}
 }
 

@@ -97,6 +97,10 @@ func (g *RestGuard) CreateRequest(t *specs.RestTicket, method, path string) (*ht
 		return nil, errors.New("The service is without nodes.")
 	}
 
+	if t.Service.RespValidatorCb == nil {
+		return nil, errors.New("Service without response validator")
+	}
+
 	if t.Request != nil {
 		t.Response = nil
 	}
@@ -134,32 +138,56 @@ func (g *RestGuard) CreateRequest(t *specs.RestTicket, method, path string) (*ht
 func (g *RestGuard) Do(t *specs.RestTicket) error {
 	var ans error = nil
 
-	for t.Retries <= t.Service.Retries {
-		fmt.Println("CALL ", t.Retries)
-		resp, err := g.Client.Do(t.Request)
-		if err != nil {
-			ans = err
-			t.Retries++
-			currReq := t.Request
-			if g.RetryCb != nil {
-				node, err := g.RetryCb(g, t)
-				if err != nil {
-					return err
-				}
-				t.Node = node
-			} else {
-				t.Node = nil
-			}
-			newReq, err := g.CreateRequest(t, currReq.Method, t.Path)
+	handleRetry := func() error {
+		t.Retries++
+		currReq := t.Request
+		t.AddFail(t.Node)
+		if g.RetryCb != nil {
+			node, err := g.RetryCb(g, t)
 			if err != nil {
 				return err
 			}
-			newReq.Header = currReq.Header
-			newReq.Body = currReq.Body
+			t.Node = node
+		} else {
+			t.Node = nil
+		}
+		newReq, err := g.CreateRequest(t, currReq.Method, t.Path)
+		if err != nil {
+			return err
+		}
+		newReq.Header = currReq.Header
+		newReq.Body = currReq.Body
 
+		if t.FailedNodes.HasNode(t.Node) && t.Service.RetryIntervalMs > 0 {
+			sleepms, err := time.ParseDuration(fmt.Sprintf(
+				"%dms", t.Service.RetryIntervalMs))
+			if err != nil {
+				return err
+			}
+			time.Sleep(sleepms)
+		}
+
+		return nil
+	}
+
+	for t.Retries <= t.Service.Retries {
+		resp, err := g.Client.Do(t.Request)
+		if err != nil {
+			ans = err
+			err = handleRetry()
+			if err != nil {
+				return err
+			}
 		} else {
 			ans = nil
 			t.Response = resp
+			valid := t.Service.RespValidatorCb(t)
+			if !valid {
+				err = handleRetry()
+				if err != nil {
+					return err
+				}
+			}
 			break
 		}
 	}

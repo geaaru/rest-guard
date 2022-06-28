@@ -31,3 +31,16 @@ func (n *RestNode) GetUrlPrefix() string {
 
 	return ans
 }
+
+func (n *RestNode) Equal(o *RestNode) bool {
+	return n.Name == o.Name && n.Ssl == o.Ssl && n.BaseUrl == o.BaseUrl
+}
+
+func (nn RestNodes) HasNode(n *RestNode) bool {
+	for _, e := range nn {
+		if e.Equal(n) {
+			return true
+		}
+	}
+	return false
+}
