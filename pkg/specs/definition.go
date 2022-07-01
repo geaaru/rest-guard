@@ -16,7 +16,7 @@ type RestTicket struct {
 	Retries     int            `json:"retries,omitempty" yaml:"retries,omitempty" mapstructure:"retries,omitempty"`
 	Service     *RestService   `json:"service,omitempty" yaml:"service,omitempty" mapstructure:"service,omitempty"`
 	Node        *RestNode      `json:"node,omitempty" yaml:"node,omitempty" mapstructure:"node,omitempty"`
-	FailedNodes RestNodes      `json:"failed_node,omitempty" yaml:"failed_node,omitempty" mapstructure:"failed_node,omitempty"`
+	FailedNodes RestNodes      `json:"failed_nodes,omitempty" yaml:"failed_nodes,omitempty" mapstructure:"failed_nodes,omitempty"`
 }
 
 type RestNode struct {
@@ -32,6 +32,8 @@ type RestService struct {
 	Nodes           []*RestNode `json:"nodes" yaml:"nodes" mapstructure:"nodes"`
 	Retries         int         `json:"retries,omitempty" yaml:"retries,omitempty" mapstructure:"retries,omitempty"`
 	RetryIntervalMs int         `json:"retry_interval_ms,omitempty" yaml:"retry_interval_ms,omitempty" mapstructure:"retry_interval_ms,omitempty"`
+
+	Options map[string]string `json:"options,omitempty" yaml:"options,omitempty" mapstructure:"options,omitempty"`
 
 	RespValidatorCb func(t *RestTicket) bool `json:"-" yaml:"-" mapstructure:"-"`
 }
