@@ -24,6 +24,7 @@ func NewRestService(n string) *RestService {
 		Retries:         0,
 		RespValidatorCb: defaultRespCheck,
 		RetryIntervalMs: 10,
+		Options:         make(map[string]string, 0),
 	}
 }
 
@@ -35,6 +36,19 @@ func (s *RestService) AddNode(n *RestNode) {
 
 func (s *RestService) GetNodes() []*RestNode {
 	return s.Nodes
+}
+
+func (s *RestService) HasOption(k string) bool {
+	_, isPresent := s.Options[k]
+	return isPresent
+}
+
+func (s *RestService) GetOption(k string) (string, error) {
+	return s.Options[k]
+}
+
+func (s *RestSerivce) SetOption(k, v string) {
+	s.Options[k] = v
 }
 
 func (s *RestService) GetTicket() *RestTicket {
