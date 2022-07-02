@@ -5,6 +5,8 @@
 package specs
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 )
 
@@ -44,10 +46,14 @@ func (s *RestService) HasOption(k string) bool {
 }
 
 func (s *RestService) GetOption(k string) (string, error) {
-	return s.Options[k]
+	v, ok := s.Options[k]
+	if !ok {
+		return "", errors.New("Key not found")
+	}
+	return v, nil
 }
 
-func (s *RestSerivce) SetOption(k, v string) {
+func (s *RestService) SetOption(k, v string) {
 	s.Options[k] = v
 }
 
@@ -63,16 +69,16 @@ func (s *RestService) GetTicket() *RestTicket {
 	return ans
 }
 
-func (s *RestService) Clone() (*RestService) {
+func (s *RestService) Clone() *RestService {
 	ans := &RestService{
-		Id:      uuid.New().String(),
-		Retries: s.Retries
-		RespValidatorCb: s.defaultRespCheck,
+		Name:            s.Name,
+		Retries:         s.Retries,
+		RespValidatorCb: s.RespValidatorCb,
 		RetryIntervalMs: s.RetryIntervalMs,
 	}
 
 	for k, v := range s.Options {
-		ans[k] = v
+		ans.Options[k] = v
 	}
 
 	return ans
