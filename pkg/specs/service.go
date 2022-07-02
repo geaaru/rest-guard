@@ -62,3 +62,18 @@ func (s *RestService) GetTicket() *RestTicket {
 
 	return ans
 }
+
+func (s *RestService) Clone() (*RestService) {
+	ans := &RestService{
+		Id:      uuid.New().String(),
+		Retries: s.Retries
+		RespValidatorCb: s.defaultRespCheck,
+		RetryIntervalMs: s.RetryIntervalMs,
+	}
+
+	for k, v := range s.Options {
+		ans[k] = v
+	}
+
+	return ans
+}
