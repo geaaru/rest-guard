@@ -170,8 +170,12 @@ func (g *RestGuard) Do(t *specs.RestTicket) error {
 		return nil
 	}
 
+	var lastResp *http.Response = nil
+
 	for t.Retries <= t.Service.Retries {
 		resp, err := g.Client.Do(t.Request)
+		t.Response = resp
+		lastResp = resp
 		if err != nil {
 			ans = err
 			err = handleRetry()
@@ -180,19 +184,26 @@ func (g *RestGuard) Do(t *specs.RestTicket) error {
 			}
 		} else {
 			ans = nil
-			t.Response = resp
-			valid := t.Service.RespValidatorCb(t)
+			valid, errValid := t.Service.RespValidatorCb(t)
 			if !valid {
+				if errValid != nil {
+					ans = errValid
+				} else {
+					ans = errors.New("Received invalid response")
+				}
 				err = handleRetry()
 				if err != nil {
 					return err
 				}
+			} else {
+				ans = nil
+				break
 			}
-			break
 		}
 	}
 
 	if ans != nil {
+		t.Response = lastResp
 		t.Retries--
 	}
 
