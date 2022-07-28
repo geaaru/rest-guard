@@ -10,13 +10,13 @@ import (
 	"github.com/google/uuid"
 )
 
-func defaultRespCheck(t *RestTicket) bool {
+func defaultRespCheck(t *RestTicket) (bool, error) {
 	ans := false
 	if t.Response != nil &&
 		(t.Response.StatusCode == 200 || t.Response.StatusCode == 201) {
 		ans = true
 	}
-	return ans
+	return ans, nil
 }
 
 func NewRestService(n string) *RestService {
