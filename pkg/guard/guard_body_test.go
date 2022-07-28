@@ -7,6 +7,7 @@ package guard_test
 import (
 	//"os"
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -48,6 +49,13 @@ var _ = Describe("HTTP Body Tests", func() {
 						"X-Rest-Guard-Version": []string{specs.RGuardVersion},
 					}),
 					ghttp.VerifyBody([]byte("{ \"request\": \"test\" }")),
+					ghttp.RespondWithPtr(&statusCode, &returnedResp),
+				),
+			)
+
+			server.RouteToHandler("GET", "/body2",
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/body2"),
 					ghttp.RespondWithPtr(&statusCode, &returnedResp),
 				),
 			)
@@ -156,6 +164,112 @@ var _ = Describe("HTTP Body Tests", func() {
 			})
 
 		})
-	})
 
+		Context("Failure 2", func() {
+			BeforeEach(func() {
+				statusCode = 401
+				returnedResp = "KO"
+			})
+
+			c := specs.NewConfig()
+			guard, err := g.NewRestGuard(c)
+			service := specs.NewRestService("local-tester")
+			service.Retries = 1
+
+			It("Execute call to correct valid endpoint", func() {
+				fmt.Println("Client using server address ", node)
+				guard.AddService(service.GetName(), service)
+
+				errAdd1 := guard.AddRestNode(service.GetName(), node)
+
+				t := service.GetTicket()
+				defer t.Rip()
+				req, errReq := guard.CreateRequest(t, "GET", "/body2")
+				errDo := guard.Do(t)
+
+				var byteValue []byte
+				if t.Response != nil && t.Response.Body != nil {
+					byteValue, err = ioutil.ReadAll(t.Response.Body)
+				}
+
+				Expect(guard).ShouldNot(BeNil())
+				Expect(req).ShouldNot(BeNil())
+				Expect(guard.GetUserAgent()).Should(Equal(
+					fmt.Sprintf("RestGuard v%s", specs.RGuardVersion)))
+				Expect(err).Should(BeNil())
+				Expect(errAdd1).Should(BeNil())
+				Expect(errReq).Should(BeNil())
+				Expect(errDo).Should(Equal(errors.New("Received invalid response")))
+				Expect(t.Response).ShouldNot(BeNil())
+				Expect(t.Response.StatusCode).Should(Equal(401))
+				Expect(string(byteValue)).Should(Equal("KO"))
+
+				Expect(t).ShouldNot(BeNil())
+				Expect(t.Id).ShouldNot(Equal(""))
+				Expect(t.Retries).Should(Equal(1))
+			})
+
+		})
+
+		Context("Failure 3 - Custom validator error", func() {
+			BeforeEach(func() {
+				statusCode = 401
+				returnedResp = "KO"
+			})
+
+			validatorCb := func(t *specs.RestTicket) (bool, error) {
+				var err error = nil
+
+				ans := false
+				if t.Response != nil &&
+					(t.Response.StatusCode == 200 || t.Response.StatusCode == 201) {
+					ans = true
+				} else {
+					err = errors.New("Custom error msg")
+				}
+				return ans, err
+			}
+
+			c := specs.NewConfig()
+			guard, err := g.NewRestGuard(c)
+			service := specs.NewRestService("local-tester")
+			service.RespValidatorCb = validatorCb
+			service.Retries = 1
+
+			It("Execute call to correct valid endpoint", func() {
+				fmt.Println("Client using server address ", node)
+				guard.AddService(service.GetName(), service)
+
+				errAdd1 := guard.AddRestNode(service.GetName(), node)
+
+				t := service.GetTicket()
+				defer t.Rip()
+				req, errReq := guard.CreateRequest(t, "GET", "/body2")
+				errDo := guard.Do(t)
+
+				var byteValue []byte
+				if t.Response != nil && t.Response.Body != nil {
+					byteValue, err = ioutil.ReadAll(t.Response.Body)
+				}
+
+				Expect(guard).ShouldNot(BeNil())
+				Expect(req).ShouldNot(BeNil())
+				Expect(guard.GetUserAgent()).Should(Equal(
+					fmt.Sprintf("RestGuard v%s", specs.RGuardVersion)))
+				Expect(err).Should(BeNil())
+				Expect(errAdd1).Should(BeNil())
+				Expect(errReq).Should(BeNil())
+				Expect(errDo).Should(Equal(errors.New("Custom error msg")))
+				Expect(t.Response).ShouldNot(BeNil())
+				Expect(t.Response.StatusCode).Should(Equal(401))
+				Expect(string(byteValue)).Should(Equal("KO"))
+
+				Expect(t).ShouldNot(BeNil())
+				Expect(t.Id).ShouldNot(Equal(""))
+				Expect(t.Retries).Should(Equal(1))
+			})
+
+		})
+
+	})
 })
