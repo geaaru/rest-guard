@@ -75,6 +75,7 @@ func (s *RestService) Clone() *RestService {
 		Retries:         s.Retries,
 		RespValidatorCb: s.RespValidatorCb,
 		RetryIntervalMs: s.RetryIntervalMs,
+		Options:         make(map[string]string, 0),
 	}
 
 	for k, v := range s.Options {
