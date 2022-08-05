@@ -132,6 +132,16 @@ func (g *RestGuard) CreateRequest(t *specs.RestTicket, method, path string) (*ht
 
 	t.Request = req
 
+	if t.RequestBodyCb != nil {
+		hasBody, reader, err := t.RequestBodyCb(t)
+		if err != nil {
+			return nil, err
+		}
+		if hasBody {
+			t.Request.Body = reader
+		}
+	}
+
 	return req, nil
 }
 
@@ -156,7 +166,6 @@ func (g *RestGuard) Do(t *specs.RestTicket) error {
 			return err
 		}
 		newReq.Header = currReq.Header
-		newReq.Body = currReq.Body
 
 		if t.FailedNodes.HasNode(t.Node) && t.Service.RetryIntervalMs > 0 {
 			sleepms, err := time.ParseDuration(fmt.Sprintf(

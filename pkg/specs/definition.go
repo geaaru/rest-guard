@@ -5,6 +5,7 @@
 package specs
 
 import (
+	"io"
 	"net/http"
 )
 
@@ -17,6 +18,8 @@ type RestTicket struct {
 	Service     *RestService   `json:"service,omitempty" yaml:"service,omitempty" mapstructure:"service,omitempty"`
 	Node        *RestNode      `json:"node,omitempty" yaml:"node,omitempty" mapstructure:"node,omitempty"`
 	FailedNodes RestNodes      `json:"failed_nodes,omitempty" yaml:"failed_nodes,omitempty" mapstructure:"failed_nodes,omitempty"`
+
+	RequestBodyCb func(t *RestTicket) (bool, io.ReadCloser, error) `json:"-" yaml:"-" mapstructure:"-"`
 }
 
 type RestNode struct {

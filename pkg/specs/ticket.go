@@ -5,6 +5,7 @@
 package specs
 
 import (
+	"io"
 	"net/http"
 )
 
@@ -14,6 +15,9 @@ func (t *RestTicket) GetService() *RestService    { return t.Service }
 func (t *RestTicket) GetNode() *RestNode          { return t.Node }
 func (t *RestTicket) GetRequest() *http.Request   { return t.Request }
 func (t *RestTicket) GetResponse() *http.Response { return t.Response }
+func (t *RestTicket) GetRequestBodyCb() func(t *RestTicket) (bool, io.ReadCloser, error) {
+	return t.RequestBodyCb
+}
 
 func (t *RestTicket) Rip() {
 	if t.Response != nil {

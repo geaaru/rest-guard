@@ -6,9 +6,11 @@ package guard_test
 
 import (
 	//"os"
+
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 
@@ -59,6 +61,15 @@ var _ = Describe("HTTP Body Tests", func() {
 					ghttp.RespondWithPtr(&statusCode, &returnedResp),
 				),
 			)
+
+			server.RouteToHandler("POST", "/body3",
+				ghttp.CombineHandlers(
+					ghttp.VerifyBody([]byte("{ \"request\": \"test\" }")),
+					ghttp.VerifyRequest("POST", "/body3"),
+					ghttp.RespondWithPtr(&statusCode, &returnedResp),
+				),
+			)
+
 		})
 
 		Context("Simple1", func() {
@@ -79,11 +90,15 @@ var _ = Describe("HTTP Body Tests", func() {
 
 				t := service.GetTicket()
 				defer t.Rip()
+
+				fBody := func(t *specs.RestTicket) (bool, io.ReadCloser, error) {
+					s := "{ \"request\": \"test\" }"
+					return true,
+						ioutil.NopCloser(bytes.NewReader([]byte(s))), nil
+				}
+				t.RequestBodyCb = fBody
 				req, errReq := guard.CreateRequest(t, "GET", "/body1")
 				req.Header.Add("X-Rest-Guard-Version", specs.RGuardVersion)
-				req.Body = ioutil.NopCloser(bytes.NewReader([]byte(
-					"{ \"request\": \"test\" }",
-				)))
 
 				errDo := guard.Do(t)
 
@@ -110,7 +125,6 @@ var _ = Describe("HTTP Body Tests", func() {
 			})
 
 		})
-
 		Context("Failure 1", func() {
 			BeforeEach(func() {
 				statusCode = 201
@@ -132,11 +146,15 @@ var _ = Describe("HTTP Body Tests", func() {
 
 				t := service.GetTicket()
 				defer t.Rip()
+
+				fBody := func(t *specs.RestTicket) (bool, io.ReadCloser, error) {
+					s := "{ \"request\": \"test\" }"
+					return true,
+						ioutil.NopCloser(bytes.NewReader([]byte(s))), nil
+				}
+				t.RequestBodyCb = fBody
 				req, errReq := guard.CreateRequest(t, "GET", "/body1")
 				req.Header.Add("X-Rest-Guard-Version", specs.RGuardVersion)
-				req.Body = ioutil.NopCloser(bytes.NewReader([]byte(
-					"{ \"request\": \"test\" }",
-				)))
 
 				errDo := guard.Do(t)
 
@@ -160,6 +178,14 @@ var _ = Describe("HTTP Body Tests", func() {
 
 				Expect(t).ShouldNot(BeNil())
 				Expect(t.Id).ShouldNot(Equal(""))
+				Expect(t.Retries).Should(Equal(1))
+
+				req, errReq = guard.CreateRequest(t, "GET", "/body3")
+				req.Method = "POST"
+				req.Header.Add("X-Rest-Guard-Version", specs.RGuardVersion)
+
+				errDo = guard.Do(t)
+				Expect(errDo).Should(BeNil())
 				Expect(t.Retries).Should(Equal(1))
 			})
 
@@ -210,7 +236,6 @@ var _ = Describe("HTTP Body Tests", func() {
 			})
 
 		})
-
 		Context("Failure 3 - Custom validator error", func() {
 			BeforeEach(func() {
 				statusCode = 401
@@ -270,6 +295,5 @@ var _ = Describe("HTTP Body Tests", func() {
 			})
 
 		})
-
 	})
 })
