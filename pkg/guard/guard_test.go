@@ -1,11 +1,12 @@
 /*
-	Copyright © 2021-2022 Funtoo Macaroni OS Linux
-	See AUTHORS and LICENSE for the license details and contributors.
+Copyright © 2021-2023 Macaroni OS Linux
+See AUTHORS and LICENSE for the license details and contributors.
 */
 package guard_test
 
 import (
 	"fmt"
+
 	g "github.com/geaaru/rest-guard/pkg/guard"
 	"github.com/geaaru/rest-guard/pkg/specs"
 

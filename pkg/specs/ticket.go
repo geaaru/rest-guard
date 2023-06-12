@@ -1,6 +1,6 @@
 /*
-	Copyright © 2021-2022 Funtoo Macaroni OS Linux
-	See AUTHORS and LICENSE for the license details and contributors.
+Copyright © 2021-2022 Funtoo Macaroni OS Linux
+See AUTHORS and LICENSE for the license details and contributors.
 */
 package specs
 
@@ -17,6 +17,21 @@ func (t *RestTicket) GetRequest() *http.Request   { return t.Request }
 func (t *RestTicket) GetResponse() *http.Response { return t.Response }
 func (t *RestTicket) GetRequestBodyCb() func(t *RestTicket) (bool, io.ReadCloser, error) {
 	return t.RequestBodyCb
+}
+func (t *RestTicket) GetRequestCloseCb() func(t *RestTicket) {
+	return t.RequestCloseCb
+}
+
+func (t *RestTicket) GetClosure(name string) (interface{}, bool) {
+	val, ok := t.Closure[name]
+	return val, ok
+}
+
+func (t *RestTicket) SetClosure(name string, c interface{}) {
+	t.Closure[name] = c
+}
+func (t *RestTicket) SetRequestCloseCb(c func(t *RestTicket)) {
+	t.RequestCloseCb = c
 }
 
 func (t *RestTicket) Rip() {

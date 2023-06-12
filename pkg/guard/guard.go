@@ -1,6 +1,6 @@
 /*
-	Copyright © 2021-2022 Funtoo Macaroni OS Linux
-	See AUTHORS and LICENSE for the license details and contributors.
+Copyright © 2021-2022 Funtoo Macaroni OS Linux
+See AUTHORS and LICENSE for the license details and contributors.
 */
 package guard
 
@@ -185,6 +185,9 @@ func (g *RestGuard) Do(t *specs.RestTicket) error {
 		resp, err := g.Client.Do(t.Request)
 		t.Response = resp
 		lastResp = resp
+		if t.RequestCloseCb != nil {
+			t.RequestCloseCb()
+		}
 		if err != nil {
 			ans = err
 			err = handleRetry()

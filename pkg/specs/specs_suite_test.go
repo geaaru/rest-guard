@@ -2,7 +2,7 @@
 Copyright © 2021-2023 Macaroni OS Linux
 See AUTHORS and LICENSE for the license details and contributors.
 */
-package guard_test
+package specs_test
 
 import (
 	"testing"
@@ -13,5 +13,5 @@ import (
 
 func TestSolver(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Rest Guard Suite")
+	RunSpecs(t, "Rest Guard Specs Suite")
 }

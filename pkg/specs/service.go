@@ -1,6 +1,6 @@
 /*
-	Copyright © 2021 Funtoo Macaroni OS Linux
-	See AUTHORS and LICENSE for the license details and contributors.
+Copyright © 2021 Funtoo Macaroni OS Linux
+See AUTHORS and LICENSE for the license details and contributors.
 */
 package specs
 
@@ -64,6 +64,7 @@ func (s *RestService) GetTicket() *RestTicket {
 		Node:    nil,
 		Path:    "",
 		Service: s,
+		Closure: make(map[string]interface{}, 0),
 	}
 
 	return ans

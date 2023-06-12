@@ -1,6 +1,6 @@
 /*
-	Copyright © 2021 Funtoo Macaroni OS Linux
-	See AUTHORS and LICENSE for the license details and contributors.
+Copyright © 2021 Funtoo Macaroni OS Linux
+See AUTHORS and LICENSE for the license details and contributors.
 */
 package specs
 
@@ -19,7 +19,9 @@ type RestTicket struct {
 	Node        *RestNode      `json:"node,omitempty" yaml:"node,omitempty" mapstructure:"node,omitempty"`
 	FailedNodes RestNodes      `json:"failed_nodes,omitempty" yaml:"failed_nodes,omitempty" mapstructure:"failed_nodes,omitempty"`
 
-	RequestBodyCb func(t *RestTicket) (bool, io.ReadCloser, error) `json:"-" yaml:"-" mapstructure:"-"`
+	RequestBodyCb  func(t *RestTicket) (bool, io.ReadCloser, error) `json:"-" yaml:"-" mapstructure:"-"`
+	RequestCloseCb func(t *RestTicket)                              `json:"-" yaml:"-" mapstructure:"-"`
+	Closure        map[string]interface{}                           `json:"-" yaml:"-" mapstructure:"-"`
 }
 
 type RestNode struct {
