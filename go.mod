@@ -1,6 +1,6 @@
 module github.com/geaaru/rest-guard
 
-go 1.18
+go 1.19
 
 require (
 	github.com/go-logr/logr v1.2.4 // indirect
