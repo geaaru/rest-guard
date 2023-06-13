@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Funtoo Macaroni OS Linux
+Copyright © 2021-2023 Macaroni OS Linux
 See AUTHORS and LICENSE for the license details and contributors.
 */
 package specs
@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	RGuardVersion = "0.1.0"
+	RGuardVersion = "0.2.1"
 )
 
 func NewConfig() *RestGuardConfig {
