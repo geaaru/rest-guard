@@ -186,7 +186,7 @@ func (g *RestGuard) Do(t *specs.RestTicket) error {
 		t.Response = resp
 		lastResp = resp
 		if t.RequestCloseCb != nil {
-			t.RequestCloseCb()
+			t.RequestCloseCb(t)
 		}
 		if err != nil {
 			ans = err
