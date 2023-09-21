@@ -40,6 +40,15 @@ func (t *RestTicket) Rip() {
 	}
 }
 
+// Facility function to get HTTP response status code
+// or a default code if the response is not available.
+func (t *RestTicket) GetResponseStatusCode(defStatusCode int) {
+	if t.Response != nil {
+		return t.Response.StatusCode
+	}
+	return defStatusCode
+}
+
 func (t *RestTicket) AddFail(n *RestNode) {
 	ispresent := t.FailedNodes.HasNode(n)
 	if !ispresent {
