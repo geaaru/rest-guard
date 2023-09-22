@@ -42,7 +42,7 @@ func (t *RestTicket) Rip() {
 
 // Facility function to get HTTP response status code
 // or a default code if the response is not available.
-func (t *RestTicket) GetResponseStatusCode(defStatusCode int) {
+func (t *RestTicket) GetResponseStatusCode(defStatusCode int) int {
 	if t.Response != nil {
 		return t.Response.StatusCode
 	}
