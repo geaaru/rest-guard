@@ -237,6 +237,10 @@ func (g *RestGuard) DoWithTimeout(t *specs.RestTicket, timeoutSec int) error {
 		MaxConnsPerHost:     origTransport.MaxConnsPerHost,
 	}
 
+	if origTransport.TLSClientConfig.InsecureSkipVerify {
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+
 	reqsTimeout, err := time.ParseDuration(fmt.Sprintf("%ds", timeoutSec))
 	if err != nil {
 		return err
