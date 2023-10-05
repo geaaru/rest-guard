@@ -1,5 +1,5 @@
 /*
-Copyright © 2021-2022 Funtoo Macaroni OS Linux
+Copyright © 2021-2023 Macaroni OS Linux
 See AUTHORS and LICENSE for the license details and contributors.
 */
 package guard
@@ -145,7 +145,7 @@ func (g *RestGuard) CreateRequest(t *specs.RestTicket, method, path string) (*ht
 	return req, nil
 }
 
-func (g *RestGuard) Do(t *specs.RestTicket) error {
+func (g *RestGuard) doClient(c *http.Client, t *specs.RestTicket) error {
 	var ans error = nil
 
 	handleRetry := func() error {
@@ -182,7 +182,7 @@ func (g *RestGuard) Do(t *specs.RestTicket) error {
 	var lastResp *http.Response = nil
 
 	for t.Retries <= t.Service.Retries {
-		resp, err := g.Client.Do(t.Request)
+		resp, err := c.Do(t.Request)
 		t.Response = resp
 		lastResp = resp
 		if t.RequestCloseCb != nil {
@@ -220,4 +220,36 @@ func (g *RestGuard) Do(t *specs.RestTicket) error {
 	}
 
 	return ans
+}
+
+func (g *RestGuard) DoWithTimeout(t *specs.RestTicket, timeoutSec int) error {
+	// Could be needed to hava a way to execute HTTP call with a custom
+	// timeout. In this case, I create a new client with the timeout
+	// in input.
+
+	origTransport := g.Client.Transport.(*http.Transport)
+
+	transport := &http.Transport{
+		Proxy:               http.ProxyFromEnvironment,
+		MaxIdleConns:        origTransport.MaxIdleConns,
+		IdleConnTimeout:     origTransport.IdleConnTimeout,
+		MaxIdleConnsPerHost: origTransport.MaxIdleConnsPerHost,
+		MaxConnsPerHost:     origTransport.MaxConnsPerHost,
+	}
+
+	reqsTimeout, err := time.ParseDuration(fmt.Sprintf("%ds", timeoutSec))
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   reqsTimeout,
+	}
+
+	return g.doClient(client, t)
+}
+
+func (g *RestGuard) Do(t *specs.RestTicket) error {
+	return g.doClient(g.Client, t)
 }
