@@ -198,6 +198,55 @@ var _ = Describe("Guard Test", func() {
 				Expect(t.Id).ShouldNot(Equal(""))
 				Expect(t.Retries).Should(Equal(1))
 			})
+
+			It("Check Response ", func() {
+				Expect(t.Response).ShouldNot(BeNil())
+				Expect(t.Response.StatusCode).Should(Equal(200))
+			})
+
+		})
+
+		Context("Simple1 Custom Timeout with Not active node", func() {
+
+			c := specs.NewConfig()
+			guard, err := g.NewRestGuard(c)
+
+			service := specs.NewRestService("google")
+			service.Retries = 1
+			nodeFailed := specs.NewRestNode("gError", "127.0.0.1", true)
+			nodeFailed.Disable = true
+			node := specs.NewRestNode("g1", "www.google.it", true)
+
+			guard.AddService(service.GetName(), service)
+
+			errAdd1 := guard.AddRestNode(service.GetName(), nodeFailed)
+			errAdd2 := guard.AddRestNode(service.GetName(), node)
+
+			t := service.GetTicket()
+			defer t.Rip()
+			req, errReq := guard.CreateRequest(t, "GET", "/")
+			errDo := guard.DoWithTimeout(t, 5)
+			It("Check nil", func() {
+				Expect(guard).ShouldNot(BeNil())
+				Expect(req).ShouldNot(BeNil())
+			})
+			It("Check err", func() {
+				Expect(err).Should(BeNil())
+				Expect(errAdd1).Should(BeNil())
+				Expect(errAdd2).Should(BeNil())
+				Expect(errReq).Should(BeNil())
+				Expect(errDo).Should(BeNil())
+			})
+			It("User Agent", func() {
+				Expect(guard.GetUserAgent()).Should(Equal(
+					fmt.Sprintf("RestGuard v%s", specs.RGuardVersion)))
+			})
+			It("Check ticket", func() {
+				Expect(t).ShouldNot(BeNil())
+				Expect(t.Id).ShouldNot(Equal(""))
+				Expect(t.Retries).Should(Equal(0))
+			})
+
 			It("Check Response ", func() {
 				Expect(t.Response).ShouldNot(BeNil())
 				Expect(t.Response.StatusCode).Should(Equal(200))

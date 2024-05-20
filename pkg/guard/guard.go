@@ -101,6 +101,18 @@ func (g *RestGuard) CreateRequest(t *specs.RestTicket, method, path string) (*ht
 		return nil, errors.New("Service without response validator")
 	}
 
+	activeNodes := []*specs.RestNode{}
+	for idx := range t.Service.Nodes {
+		if t.Service.Nodes[idx].Disable {
+			continue
+		}
+		activeNodes = append(activeNodes, t.Service.Nodes[idx])
+	}
+
+	if len(activeNodes) == 0 {
+		return nil, errors.New("The service is without active nodes.")
+	}
+
 	if t.Request != nil {
 		t.Response = nil
 	}
@@ -108,7 +120,7 @@ func (g *RestGuard) CreateRequest(t *specs.RestTicket, method, path string) (*ht
 
 	var rn *specs.RestNode
 	if t.Node == nil {
-		rn = t.Service.Nodes[t.Retries%len(t.Service.Nodes)]
+		rn = activeNodes[t.Retries%len(activeNodes)]
 		t.Node = rn
 	} else {
 		rn = t.Node
@@ -237,7 +249,8 @@ func (g *RestGuard) DoWithTimeout(t *specs.RestTicket, timeoutSec int) error {
 		MaxConnsPerHost:     origTransport.MaxConnsPerHost,
 	}
 
-	if origTransport.TLSClientConfig.InsecureSkipVerify {
+	if origTransport.TLSClientConfig != nil &&
+		origTransport.TLSClientConfig.InsecureSkipVerify {
 		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 

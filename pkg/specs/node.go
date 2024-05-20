@@ -16,8 +16,12 @@ func NewRestNode(name, burl string, ssl bool) *RestNode {
 		Name:    name,
 		BaseUrl: burl,
 		Ssl:     ssl,
+		Disable: false,
 	}
 }
+
+func (n *RestNode) IsActive() bool    { return !n.Disable }
+func (n *RestNode) SetDisable(b bool) { n.Disable = b }
 
 func (n *RestNode) GetUrlPrefix() string {
 	ans := ""

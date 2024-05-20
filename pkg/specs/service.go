@@ -59,12 +59,13 @@ func (s *RestService) SetOption(k, v string) {
 
 func (s *RestService) GetTicket() *RestTicket {
 	ans := &RestTicket{
-		Id:      uuid.New().String(),
-		Retries: 0,
-		Node:    nil,
-		Path:    "",
-		Service: s,
-		Closure: make(map[string]interface{}, 0),
+		Id:          uuid.New().String(),
+		Retries:     0,
+		Node:        nil,
+		Path:        "",
+		Service:     s,
+		Closure:     make(map[string]interface{}, 0),
+		FailedNodes: []*RestNode{},
 	}
 
 	return ans
