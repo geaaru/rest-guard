@@ -3,7 +3,7 @@ module github.com/geaaru/rest-guard
 go 1.19
 
 require (
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.6.0
 	github.com/onsi/ginkgo/v2 v2.17.3
 	github.com/onsi/gomega v1.33.1
 )
