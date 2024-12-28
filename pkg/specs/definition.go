@@ -28,6 +28,7 @@ type RestNode struct {
 	Name    string `json:"name" yaml:"name" mapstructure:"name"`
 	Disable bool   `json:"disable,omitempty" yaml:"disable,omitempty" mapstructure:"disable,omitempty"`
 	BaseUrl string `json:"base_url" yaml:"base_url" mapstructure:"base_url"`
+	Schema  string `json:"schema,omitempty" yaml:"schema,omitempty" mapstructure:"schema,omitempty"`
 	Ssl     bool   `json:"ssl,omitempty" yaml:"ssl,omitempty" mapstructure:"ssl,omitempty"`
 }
 
