@@ -7,6 +7,7 @@ package guard_test
 import (
 	"bytes"
 	"crypto/md5"
+	"crypto/sha512"
 	"errors"
 	"fmt"
 	"io"
@@ -20,6 +21,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
+	"golang.org/x/crypto/blake2b"
 )
 
 var _ = Describe("HTTP Body Tests", func() {
@@ -355,6 +357,10 @@ var _ = Describe("HTTP Body Tests", func() {
 				Expect(artefact.Size).Should(Equal(int64(len([]byte(body)))))
 				Expect(artefact.Md5).Should(Equal(
 					fmt.Sprintf("%x", md5.Sum([]byte(body)))))
+				Expect(artefact.Sha512).Should(Equal(
+					fmt.Sprintf("%x", sha512.Sum512([]byte(body)))))
+				Expect(artefact.Blake2b).Should(Equal(
+					fmt.Sprintf("%x", blake2b.Sum512([]byte(body)))))
 			})
 
 		})
