@@ -5,14 +5,14 @@ See AUTHORS and LICENSE for the license details and contributors.
 package guard_test
 
 import (
-	//"os"
-
 	"bytes"
+	"crypto/md5"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	g "github.com/geaaru/rest-guard/pkg/guard"
 	"github.com/geaaru/rest-guard/pkg/specs"
@@ -295,5 +295,69 @@ var _ = Describe("HTTP Body Tests", func() {
 			})
 
 		})
+
+		// https://github.com/macaroni-os/anise-portage-converter/releases/download/v0.16.2/anise-portage-converter-v0.16.2-source.tar.gz
+
+		Context("Download body OK", func() {
+			body := "abcdefghijlmnopqrstuvwxyz"
+			BeforeEach(func() {
+				statusCode = 200
+				returnedResp = body
+			})
+
+			validatorCb := func(t *specs.RestTicket) (bool, error) {
+				var err error = nil
+
+				ans := false
+				if t.Response != nil &&
+					(t.Response.StatusCode == 200 || t.Response.StatusCode == 201) {
+					ans = true
+				} else {
+					err = errors.New("Custom error msg")
+				}
+				return ans, err
+			}
+
+			testFile := "/tmp/test-rest-guard-download"
+			c := specs.NewConfig()
+			guard, err := g.NewRestGuard(c)
+			service := specs.NewRestService("local-tester")
+			service.RespValidatorCb = validatorCb
+			service.Retries = 1
+
+			It("Execute call to correct valid endpoint", func() {
+				fmt.Println("Client using server address ", node)
+				guard.AddService(service.GetName(), service)
+
+				errAdd1 := guard.AddRestNode(service.GetName(), node)
+
+				t := service.GetTicket()
+				defer t.Rip()
+				req, errReq := guard.CreateRequest(t, "GET", "/body2")
+				artefact, errDo := guard.DoDownload(t, testFile)
+				defer os.Remove(testFile)
+
+				Expect(guard).ShouldNot(BeNil())
+				Expect(req).ShouldNot(BeNil())
+				Expect(guard.GetUserAgent()).Should(Equal(
+					fmt.Sprintf("RestGuard v%s", specs.RGuardVersion)))
+				Expect(err).Should(BeNil())
+				Expect(errAdd1).Should(BeNil())
+				Expect(errReq).Should(BeNil())
+				Expect(errDo).Should(BeNil())
+				Expect(t.Response).ShouldNot(BeNil())
+				Expect(t.Response.StatusCode).Should(Equal(200))
+				Expect(t).ShouldNot(BeNil())
+				Expect(t.Id).ShouldNot(Equal(""))
+				Expect(t.Retries).Should(Equal(0))
+				Expect(artefact).ShouldNot(BeNil())
+				Expect(artefact.Path).Should(Equal(testFile))
+				Expect(artefact.Size).Should(Equal(int64(len([]byte(body)))))
+				Expect(artefact.Md5).Should(Equal(
+					fmt.Sprintf("%x", md5.Sum([]byte(body)))))
+			})
+
+		})
+
 	})
 })

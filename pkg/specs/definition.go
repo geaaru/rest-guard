@@ -56,3 +56,9 @@ type RestGuardConfig struct {
 	DisableCompression  bool `json:"disable_compression,omitempty" yaml:"disable_compression,omitempty" mapstructure:"disable_compression,omitempty"`
 	InsecureSkipVerify  bool `json:"insecure_skip_verify,omitempty" yaml:"insecure_skip_verify,omitempty" mapstructure:"insecure_skip_verify,omitempty"`
 }
+
+type RestArtefact struct {
+	Path string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+	Size int64  `json:"size,omitempty" yaml:"size,omitempty" mapstructure:"size,omitempty"`
+	Md5  string `json:"md5,omitempty" yaml:"md5,omitempty" mapstructure:"md5,omitempty"`
+}
