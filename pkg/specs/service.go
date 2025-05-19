@@ -77,7 +77,7 @@ func (s *RestService) SetRateLimiter() error {
 	}
 
 	// N reqs every second
-	ans.RateLimiter = rate.NewLimiter(rate.Every(1*time.Second, seconds))
+	s.RateLimiter = rate.NewLimiter(rate.Every(1*time.Second), reqs)
 	return nil
 }
 
