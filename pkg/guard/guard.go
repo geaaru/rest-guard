@@ -140,7 +140,10 @@ func (g *RestGuard) CreateRequest(t *specs.RestTicket, method, path string) (*ht
 		return nil, err
 	}
 
-	if g.GetUserAgent() != "" {
+	if t.Service.HasOption("User-Agent") {
+		ua, _ := t.Service.GetOption("User-Agent")
+		req.Header.Add("User-Agent", ua)
+	} else if g.GetUserAgent() != "" {
 		req.Header.Add("User-Agent", g.GetUserAgent())
 	}
 
