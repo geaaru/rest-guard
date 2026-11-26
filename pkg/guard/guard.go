@@ -167,7 +167,7 @@ func (g *RestGuard) doClient(c *http.Client, t *specs.RestTicket) error {
 
 	ctx := context.Background()
 
-	handleRetry := func() error {
+	handleRetry := func(closeResponse bool) error {
 		t.Retries++
 		currReq := t.Request
 		t.AddFail(t.Node)
@@ -179,6 +179,11 @@ func (g *RestGuard) doClient(c *http.Client, t *specs.RestTicket) error {
 			t.Node = node
 		} else {
 			t.Node = nil
+		}
+		// The last response remains available to the caller when retries are exhausted.
+		if closeResponse && t.Retries <= t.Service.Retries && t.Response != nil && t.Response.Body != nil {
+			t.Response.Body.Close()
+			t.Response = nil
 		}
 		newReq, err := g.CreateRequest(t, currReq.Method, t.Path)
 		if err != nil {
@@ -219,7 +224,7 @@ func (g *RestGuard) doClient(c *http.Client, t *specs.RestTicket) error {
 		}
 		if err != nil {
 			ans = err
-			err = handleRetry()
+			err = handleRetry(false)
 			if err != nil {
 				return err
 			}
@@ -232,7 +237,7 @@ func (g *RestGuard) doClient(c *http.Client, t *specs.RestTicket) error {
 				} else {
 					ans = errors.New("Received invalid response")
 				}
-				err = handleRetry()
+				err = handleRetry(true)
 				if err != nil {
 					return err
 				}
